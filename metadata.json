@@ -1,0 +1,5 @@
+{
+  "name": "Autoencoder Embeddings Playground",
+  "description": "An educational tool to visualize and manipulate image embeddings using an Autoencoder trained on MNIST in the browser.",
+  "requestFramePermissions": []
+}
