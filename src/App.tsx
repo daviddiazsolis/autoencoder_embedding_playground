@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MnistData } from './services/mnist';
-import { AutoencoderService } from './services/model';
-import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler } from 'lucide-react';
+import { AutoencoderService, LayerConfig } from './services/model';
+import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler, Plus, Minus } from 'lucide-react';
 import { cn } from './lib/utils';
 import * as tf from '@tensorflow/tfjs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -104,37 +104,205 @@ function TabularDataViewer({ images, selectedIndex, onSelect, lang }: { images: 
   );
 }
 
-function ArchitectureDiagram({ lang }: { lang: 'en' | 'es' }) {
+function ArchitectureDiagram({ 
+  lang, 
+  encoderLayers, 
+  decoderLayers, 
+  onUpdateEncoder, 
+  onUpdateDecoder,
+  isTraining,
+  onReset
+}: { 
+  lang: 'en' | 'es', 
+  encoderLayers: LayerConfig[], 
+  decoderLayers: LayerConfig[],
+  onUpdateEncoder: (layers: LayerConfig[]) => void,
+  onUpdateDecoder: (layers: LayerConfig[]) => void,
+  isTraining: boolean,
+  onReset: () => void
+}) {
   const t = translations[lang];
-  const layers = [
-    { name: 'Input', size: 784, act: '-', h: 'h-40', color: 'bg-blue-500/10 border-blue-500/50 text-blue-400' },
-    { name: 'Dense', size: 256, act: 'ReLU', h: 'h-32', color: 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400' },
-    { name: 'Dense', size: 128, act: 'ReLU', h: 'h-24', color: 'bg-violet-500/10 border-violet-500/50 text-violet-400' },
-    { name: 'Dense', size: 64, act: 'ReLU', h: 'h-16', color: 'bg-fuchsia-500/10 border-fuchsia-500/50 text-fuchsia-400' },
-    { name: 'Embedding', size: 8, act: 'Linear', h: 'h-8', color: 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]' },
-    { name: 'Dense', size: 64, act: 'ReLU', h: 'h-16', color: 'bg-fuchsia-500/10 border-fuchsia-500/50 text-fuchsia-400' },
-    { name: 'Dense', size: 128, act: 'ReLU', h: 'h-24', color: 'bg-violet-500/10 border-violet-500/50 text-violet-400' },
-    { name: 'Dense', size: 256, act: 'ReLU', h: 'h-32', color: 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400' },
-    { name: 'Output', size: 784, act: 'Sigmoid', h: 'h-40', color: 'bg-blue-500/10 border-blue-500/50 text-blue-400' },
-  ];
+  const neuronChoices = [32, 64, 128, 256];
+  const activationChoices = ['relu', 'sigmoid', 'tanh', 'linear'];
+
+  const addLayer = (type: 'encoder' | 'decoder') => {
+    if (isTraining) return;
+    if (type === 'encoder') {
+      if (encoderLayers.length >= 4) return;
+      onUpdateEncoder([...encoderLayers, { units: 64, activation: 'relu' }]);
+    } else {
+      if (decoderLayers.length >= 4) return;
+      onUpdateDecoder([{ units: 64, activation: 'relu' }, ...decoderLayers]);
+    }
+  };
+
+  const removeLayer = (type: 'encoder' | 'decoder', index: number) => {
+    if (isTraining) return;
+    if (type === 'encoder') {
+      if (encoderLayers.length <= 1) return;
+      onUpdateEncoder(encoderLayers.filter((_, i) => i !== index));
+    } else {
+      if (decoderLayers.length <= 1) return;
+      onUpdateDecoder(decoderLayers.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateLayer = (type: 'encoder' | 'decoder', index: number, field: keyof LayerConfig, value: any) => {
+    if (isTraining) return;
+    if (type === 'encoder') {
+      const newLayers = [...encoderLayers];
+      newLayers[index] = { ...newLayers[index], [field]: value };
+      onUpdateEncoder(newLayers);
+    } else {
+      const newLayers = [...decoderLayers];
+      newLayers[index] = { ...newLayers[index], [field]: value };
+      onUpdateDecoder(newLayers);
+    }
+  };
+
+  const getLayerHeight = (units: number) => {
+    if (units >= 256) return 'h-32';
+    if (units >= 128) return 'h-24';
+    if (units >= 64) return 'h-16';
+    return 'h-10';
+  };
+
+  const getLayerColor = (type: 'input' | 'encoder' | 'embedding' | 'decoder' | 'output') => {
+    switch(type) {
+      case 'input': return 'bg-blue-500/10 border-blue-500/50 text-blue-400';
+      case 'encoder': return 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400';
+      case 'embedding': return 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]';
+      case 'decoder': return 'bg-fuchsia-500/10 border-fuchsia-500/50 text-fuchsia-400';
+      case 'output': return 'bg-blue-500/10 border-blue-500/50 text-blue-400';
+    }
+  };
 
   return (
-    <div className="flex items-center justify-center gap-1 md:gap-3 p-6 bg-zinc-900/50 rounded-xl border border-zinc-800 h-full overflow-x-auto">
-      {layers.map((l, i) => (
-        <div key={i} className="flex flex-col items-center gap-2 min-w-[48px]">
-          <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold text-center h-6">{l.name}</div>
-          <div className={cn(
-            "w-8 md:w-12 border-2 rounded-md transition-all flex items-center justify-center relative group", 
-            l.h, l.color
-          )}>
-            <span className="text-[10px] font-mono rotate-90 md:rotate-0">{l.size}</span>
-            <div className="absolute -top-10 bg-zinc-800 text-zinc-200 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-              {l.size} {t.s2_neurons}
-            </div>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-center gap-1 md:gap-3 p-6 bg-zinc-900/50 rounded-xl border border-zinc-800 h-full overflow-x-auto min-h-[350px]">
+        {/* Input Layer */}
+        <div className="flex flex-col items-center gap-2 min-w-[64px]">
+          <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold text-center h-6">Input</div>
+          <div className={cn("w-8 md:w-12 border-2 rounded-md transition-all flex items-center justify-center h-40", getLayerColor('input'))}>
+            <span className="text-[10px] font-mono">784</span>
           </div>
-          <div className="text-[9px] text-zinc-400 font-mono mt-1 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">{l.act}</div>
+          <div className="h-6" />
         </div>
-      ))}
+
+        {/* Encoder Layers */}
+        {encoderLayers.map((l, i) => (
+          <div key={`enc-${i}`} className="flex flex-col items-center gap-2 min-w-[64px] group/layer">
+            <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold text-center h-6 flex items-center gap-1">
+              Dense
+              {!isTraining && (
+                <button onClick={() => removeLayer('encoder', i)} className="opacity-0 group-hover/layer:opacity-100 text-rose-500 hover:text-rose-400 transition-opacity">
+                  <Minus className="w-2.5 h-2.5" />
+                </button>
+              )}
+            </div>
+            <div className={cn(
+              "w-8 md:w-12 border-2 rounded-md transition-all flex flex-col items-center justify-center relative group", 
+              getLayerHeight(l.units), getLayerColor('encoder')
+            )}>
+              <select 
+                value={l.units} 
+                disabled={isTraining}
+                onChange={(e) => updateLayer('encoder', i, 'units', Number(e.target.value))}
+                className="text-[10px] font-mono bg-transparent outline-none cursor-pointer appearance-none text-center w-full"
+              >
+                {neuronChoices.map(n => <option key={n} value={n} className="bg-zinc-900">{n}</option>)}
+              </select>
+            </div>
+            <select 
+              value={l.activation} 
+              disabled={isTraining}
+              onChange={(e) => updateLayer('encoder', i, 'activation', e.target.value)}
+              className="text-[9px] text-zinc-400 font-mono mt-1 bg-zinc-950 px-1 py-0.5 rounded border border-zinc-800 outline-none cursor-pointer"
+            >
+              {activationChoices.map(a => <option key={a} value={a} className="bg-zinc-900">{a}</option>)}
+            </select>
+          </div>
+        ))}
+
+        {/* Add Encoder Layer Button */}
+        {!isTraining && encoderLayers.length < 4 && (
+          <button onClick={() => addLayer('encoder')} className="flex flex-col items-center justify-center p-2 text-zinc-600 hover:text-emerald-500 transition-colors">
+            <Plus className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Embedding Layer */}
+        <div className="flex flex-col items-center gap-2 min-w-[64px]">
+          <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold text-center h-6">Embedding</div>
+          <div className={cn("w-8 md:w-12 border-2 rounded-md transition-all flex items-center justify-center h-8", getLayerColor('embedding'))}>
+            <span className="text-[10px] font-mono">8</span>
+          </div>
+          <div className="text-[9px] text-zinc-400 font-mono mt-1 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">Linear</div>
+        </div>
+
+        {/* Add Decoder Layer Button */}
+        {!isTraining && decoderLayers.length < 4 && (
+          <button onClick={() => addLayer('decoder')} className="flex flex-col items-center justify-center p-2 text-zinc-600 hover:text-emerald-500 transition-colors">
+            <Plus className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Decoder Layers */}
+        {decoderLayers.map((l, i) => (
+          <div key={`dec-${i}`} className="flex flex-col items-center gap-2 min-w-[64px] group/layer">
+            <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold text-center h-6 flex items-center gap-1">
+              Dense
+              {!isTraining && (
+                <button onClick={() => removeLayer('decoder', i)} className="opacity-0 group-hover/layer:opacity-100 text-rose-500 hover:text-rose-400 transition-opacity">
+                  <Minus className="w-2.5 h-2.5" />
+                </button>
+              )}
+            </div>
+            <div className={cn(
+              "w-8 md:w-12 border-2 rounded-md transition-all flex flex-col items-center justify-center relative group", 
+              getLayerHeight(l.units), getLayerColor('decoder')
+            )}>
+              <select 
+                value={l.units} 
+                disabled={isTraining}
+                onChange={(e) => updateLayer('decoder', i, 'units', Number(e.target.value))}
+                className="text-[10px] font-mono bg-transparent outline-none cursor-pointer appearance-none text-center w-full"
+              >
+                {neuronChoices.map(n => <option key={n} value={n} className="bg-zinc-900">{n}</option>)}
+              </select>
+            </div>
+            <select 
+              value={l.activation} 
+              disabled={isTraining}
+              onChange={(e) => updateLayer('decoder', i, 'activation', e.target.value)}
+              className="text-[9px] text-zinc-400 font-mono mt-1 bg-zinc-950 px-1 py-0.5 rounded border border-zinc-800 outline-none cursor-pointer"
+            >
+              {activationChoices.map(a => <option key={a} value={a} className="bg-zinc-900">{a}</option>)}
+            </select>
+          </div>
+        ))}
+
+        {/* Output Layer */}
+        <div className="flex flex-col items-center gap-2 min-w-[64px]">
+          <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold text-center h-6">Output</div>
+          <div className={cn("w-8 md:w-12 border-2 rounded-md transition-all flex items-center justify-center h-40", getLayerColor('output'))}>
+            <span className="text-[10px] font-mono">784</span>
+          </div>
+          <div className="text-[9px] text-zinc-400 font-mono mt-1 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">Sigmoid</div>
+        </div>
+      </div>
+      
+      {!isTraining && (
+        <div className="flex justify-center">
+          <button 
+            onClick={onReset}
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg border border-zinc-700 transition-colors text-sm font-medium"
+          >
+            <RotateCcw className="w-4 h-4" />
+            {lang === 'en' ? 'Apply Architecture & Reset Weights' : 'Aplicar Arquitectura y Reiniciar Pesos'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -152,6 +320,8 @@ export default function App() {
   
   const [epoch, setEpoch] = useState(0);
   const [targetEpochs, setTargetEpochs] = useState(50);
+  const [learningRate, setLearningRate] = useState(0.001);
+  const [regularization, setRegularization] = useState(0);
   const [lossHistory, setLossHistory] = useState<{epoch: number, loss: number, val_loss: number}[]>([]);
   
   const [testImages, setTestImages] = useState<Float32Array[]>([]);
@@ -161,6 +331,19 @@ export default function App() {
   
   const [mapData, setMapData] = useState<{x: number[], y: number[], z: number[], images: Float32Array[]} | null>(null);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [plotRevision, setPlotRevision] = useState(0);
+
+  // Architecture State
+  const [encoderLayers, setEncoderLayers] = useState<LayerConfig[]>([
+    { units: 256, activation: 'relu' },
+    { units: 128, activation: 'relu' },
+    { units: 64, activation: 'relu' },
+  ]);
+  const [decoderLayers, setDecoderLayers] = useState<LayerConfig[]>([
+    { units: 64, activation: 'relu' },
+    { units: 128, activation: 'relu' },
+    { units: 256, activation: 'relu' },
+  ]);
 
   // Interpolation State
   const [interpA, setInterpA] = useState(0);
@@ -223,7 +406,7 @@ export default function App() {
       testData.ys.dispose();
 
       // Initialize model with random weights so users can see the "before training" state
-      modelService.buildModel(EMBEDDING_DIM);
+      modelService.buildModel(encoderLayers, decoderLayers, EMBEDDING_DIM, learningRate, regularization);
       setIsInitialized(true);
       calculateInitialLoss();
     });
@@ -306,7 +489,7 @@ export default function App() {
 
   const resetModel = async () => {
     if (isTraining) return;
-    modelService.buildModel(EMBEDDING_DIM);
+    modelService.buildModel(encoderLayers, decoderLayers, EMBEDDING_DIM, learningRate, regularization);
     setEpoch(0);
     setLossHistory([]);
     setIsTrained(false);
@@ -512,7 +695,15 @@ export default function App() {
           <p className="text-sm text-zinc-400">
             {t.s2_desc}
           </p>
-          <ArchitectureDiagram lang={lang} />
+          <ArchitectureDiagram 
+            lang={lang} 
+            encoderLayers={encoderLayers}
+            decoderLayers={decoderLayers}
+            onUpdateEncoder={setEncoderLayers}
+            onUpdateDecoder={setDecoderLayers}
+            isTraining={isTraining}
+            onReset={resetModel}
+          />
         </section>
 
         {/* Section 3: Playground (Merged Training & Latent Space) */}
@@ -564,6 +755,34 @@ export default function App() {
                   className="w-24 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500 disabled:opacity-50"
                 />
                 <span className="text-sm font-mono text-emerald-400 w-8">{targetEpochs}</span>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 border-l border-zinc-800">
+                <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">{t.s3_lr}</span>
+                <select
+                  value={learningRate}
+                  onChange={(e) => setLearningRate(parseFloat(e.target.value))}
+                  disabled={isTraining}
+                  className="bg-zinc-800 text-xs text-zinc-300 rounded px-2 py-1 outline-none cursor-pointer border border-zinc-700"
+                >
+                  {[0.1, 0.01, 0.001, 0.0001].map(lr => (
+                    <option key={lr} value={lr}>{lr}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 px-4 border-l border-zinc-800">
+                <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">{t.s3_reg}</span>
+                <select
+                  value={regularization}
+                  onChange={(e) => setRegularization(parseFloat(e.target.value))}
+                  disabled={isTraining}
+                  className="bg-zinc-800 text-xs text-zinc-300 rounded px-2 py-1 outline-none cursor-pointer border border-zinc-700"
+                >
+                  {[0, 0.001, 0.01, 0.1].map(reg => (
+                    <option key={reg} value={reg}>{reg}</option>
+                  ))}
+                </select>
               </div>
               
               <div className="flex items-center gap-2 px-4 border-l border-zinc-800 min-w-[120px]">
@@ -754,6 +973,7 @@ export default function App() {
                     autosize: true,
                     margin: { l: 0, r: 0, b: 0, t: 0 },
                     paper_bgcolor: 'transparent',
+                    uirevision: 'constant',
                     scene: {
                       xaxis: { title: 'PCA 1', backgroundcolor: 'transparent', gridcolor: '#27272a', zerolinecolor: '#3f3f46' },
                       yaxis: { title: 'PCA 2', backgroundcolor: 'transparent', gridcolor: '#27272a', zerolinecolor: '#3f3f46' },

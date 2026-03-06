@@ -1,48 +1,89 @@
 import * as tf from '@tensorflow/tfjs';
 
+export type LayerConfig = {
+  units: number;
+  activation: string;
+};
+
 export class AutoencoderService {
   autoencoder: tf.LayersModel | null = null;
   encoder: tf.LayersModel | null = null;
   decoder: tf.LayersModel | null = null;
 
-  buildModel(embeddingDim: number = 8) {
-    // Instantiate layers
-    const encoded1 = tf.layers.dense({ units: 256, activation: 'relu' });
-    const encoded2 = tf.layers.dense({ units: 128, activation: 'relu' });
-    const encoded3 = tf.layers.dense({ units: 64, activation: 'relu' });
-    const embeddingLayer = tf.layers.dense({ units: embeddingDim, activation: 'linear', name: 'embedding' });
-
-    const decoded1 = tf.layers.dense({ units: 64, activation: 'relu' });
-    const decoded2 = tf.layers.dense({ units: 128, activation: 'relu' });
-    const decoded3 = tf.layers.dense({ units: 256, activation: 'relu' });
-    const outputLayer = tf.layers.dense({ units: 784, activation: 'sigmoid' });
-
-    // Build Autoencoder
-    const input = tf.input({ shape: [784] });
-    const e1 = encoded1.apply(input);
-    const e2 = encoded2.apply(e1);
-    const e3 = encoded3.apply(e2);
-    const emb = embeddingLayer.apply(e3);
-
-    const d1 = decoded1.apply(emb);
-    const d2 = decoded2.apply(d1);
-    const d3 = decoded3.apply(d2);
-    const out = outputLayer.apply(d3);
-
-    this.autoencoder = tf.model({ inputs: input, outputs: out as tf.SymbolicTensor });
-    this.autoencoder.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
+  buildModel(
+    encoderLayers: LayerConfig[],
+    decoderLayers: LayerConfig[],
+    embeddingDim: number = 8,
+    learningRate: number = 0.001,
+    regularization: number = 0
+  ) {
+    const kernelRegularizer = regularization > 0 ? tf.regularizers.l2({ l2: regularization }) : undefined;
 
     // Build Encoder
-    this.encoder = tf.model({ inputs: input, outputs: emb as tf.SymbolicTensor });
+    const input = tf.input({ shape: [784] });
+    let lastLayer = input;
+
+    const encoderDenseLayers: tf.layers.Layer[] = [];
+    for (const config of encoderLayers) {
+      const layer = tf.layers.dense({ 
+        units: config.units, 
+        activation: config.activation as any,
+        kernelRegularizer 
+      });
+      encoderDenseLayers.push(layer);
+      lastLayer = layer.apply(lastLayer) as tf.SymbolicTensor;
+    }
+
+    const embeddingLayer = tf.layers.dense({ 
+      units: embeddingDim, 
+      activation: 'linear', 
+      name: 'embedding',
+      kernelRegularizer
+    });
+    const emb = embeddingLayer.apply(lastLayer) as tf.SymbolicTensor;
+
+    this.encoder = tf.model({ inputs: input, outputs: emb });
 
     // Build Decoder
     const decoderInput = tf.input({ shape: [embeddingDim] });
-    const dec1 = decoded1.apply(decoderInput);
-    const dec2 = decoded2.apply(dec1);
-    const dec3 = decoded3.apply(dec2);
-    const decOut = outputLayer.apply(dec3);
+    let lastDecLayer = decoderInput;
 
-    this.decoder = tf.model({ inputs: decoderInput, outputs: decOut as tf.SymbolicTensor });
+    const decoderDenseLayers: tf.layers.Layer[] = [];
+    for (const config of decoderLayers) {
+      const layer = tf.layers.dense({ 
+        units: config.units, 
+        activation: config.activation as any,
+        kernelRegularizer
+      });
+      decoderDenseLayers.push(layer);
+      lastDecLayer = layer.apply(lastDecLayer) as tf.SymbolicTensor;
+    }
+
+    const outputLayer = tf.layers.dense({ 
+      units: 784, 
+      activation: 'sigmoid',
+      kernelRegularizer
+    });
+    const decOut = outputLayer.apply(lastDecLayer) as tf.SymbolicTensor;
+
+    this.decoder = tf.model({ inputs: decoderInput, outputs: decOut });
+
+    // Build Full Autoencoder
+    let aeLastLayer = input;
+    for (const layer of encoderDenseLayers) {
+      aeLastLayer = layer.apply(aeLastLayer) as tf.SymbolicTensor;
+    }
+    aeLastLayer = embeddingLayer.apply(aeLastLayer) as tf.SymbolicTensor;
+    for (const layer of decoderDenseLayers) {
+      aeLastLayer = layer.apply(aeLastLayer) as tf.SymbolicTensor;
+    }
+    const aeOut = outputLayer.apply(aeLastLayer) as tf.SymbolicTensor;
+
+    this.autoencoder = tf.model({ inputs: input, outputs: aeOut });
+    this.autoencoder.compile({ 
+      optimizer: tf.train.adam(learningRate), 
+      loss: 'meanSquaredError' 
+    });
   }
 
   async evaluate(data: { xs: tf.Tensor2D; ys: tf.Tensor2D }) {
