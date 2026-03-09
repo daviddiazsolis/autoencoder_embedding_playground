@@ -1271,6 +1271,36 @@ export default function App() {
                 {t.ref_2}
               </a>
             </li>
+            <li>
+              <a href="https://playground.tensorflow.org/" target="_blank" rel="noreferrer" className="text-emerald-500 hover:underline">
+                {t.ref_tf_playground}
+              </a>
+            </li>
+            <li>
+              <a href="https://cloud.google.com/blog/products/ai-machine-learning/understanding-neural-networks-with-tensorflow-playground" target="_blank" rel="noreferrer" className="text-emerald-500 hover:underline">
+                {t.ref_tf_blog}
+              </a>
+            </li>
+            <li>
+              <a href="https://blog.keras.io/building-autoencoders-in-keras.html" target="_blank" rel="noreferrer" className="text-emerald-500 hover:underline">
+                {t.ref_keras_ae}
+              </a>
+            </li>
+            <li>
+              <a href="https://jalammar.github.io/illustrated-word2vec/" target="_blank" rel="noreferrer" className="text-emerald-500 hover:underline">
+                {t.ref_word2vec}
+              </a>
+            </li>
+            <li>
+              <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank" rel="noreferrer" className="text-emerald-500 hover:underline">
+                {t.ref_transformer}
+              </a>
+            </li>
+            <li>
+              <a href="https://vickiboykis.com/what_are_embeddings/" target="_blank" rel="noreferrer" className="text-emerald-500 hover:underline">
+                {t.ref_embeddings_guide}
+              </a>
+            </li>
           </ul>
         </section>
 
