@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MnistData } from './services/mnist';
 import { AutoencoderService, LayerConfig } from './services/model';
-import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler, Plus, Minus } from 'lucide-react';
+import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler, Plus, Minus, ExternalLink } from 'lucide-react';
 import { cn } from './lib/utils';
 import * as tf from '@tensorflow/tfjs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -1257,6 +1257,32 @@ export default function App() {
             <div className="md:col-span-2 bg-zinc-900/30 p-6 rounded-2xl border border-zinc-800 hover:border-emerald-500/30 transition-colors">
               <h3 className="text-sm font-medium text-emerald-400 mb-2">{t.s6_q9_title}</h3>
               <p className="text-sm text-zinc-300">{t.s6_q9_text}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Notebooks Section */}
+        <section className="space-y-4 border-t border-zinc-800 pt-12 pb-8">
+          <div className="flex items-center gap-3 mb-3">
+            <BookOpen className="w-5 h-5 text-violet-400" />
+            <h2 className="text-lg font-medium text-zinc-200">{t.notebooks_title}</h2>
+          </div>
+          <p className="text-sm text-zinc-400 mb-5">{t.notebooks_subtitle}</p>
+          <div className="rounded-xl border border-violet-500/30 hover:border-violet-500/60 bg-zinc-900/60 p-5 flex flex-col gap-4 transition-colors max-w-2xl">
+            <div>
+              <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300">04_autoencoders_embeddings.ipynb</span>
+              <h3 className="mt-3 text-base font-semibold text-zinc-100">{t.notebooks_ae}</h3>
+              <p className="mt-1 text-sm text-zinc-400 leading-relaxed">{t.notebooks_ae_desc}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a href="https://colab.research.google.com/github/daviddiazsolis/association_rules_playground/blob/main/notebooks/04_autoencoders_embeddings.ipynb" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/40 transition-colors">
+                <ExternalLink className="w-3.5 h-3.5" />
+                {t.notebooks_open_colab}
+              </a>
+              <a href="https://github.com/daviddiazsolis/association_rules_playground/blob/main/notebooks/04_autoencoders_embeddings.ipynb" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors">
+                <Github className="w-3.5 h-3.5" />
+                {t.notebooks_view_gh}
+              </a>
             </div>
           </div>
         </section>
