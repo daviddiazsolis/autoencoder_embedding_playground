@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MnistData } from './services/mnist';
 import { AutoencoderService, LayerConfig } from './services/model';
-import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler, Plus, Minus, ExternalLink } from 'lucide-react';
+import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler, Plus, Minus, ExternalLink, Sun, Moon } from 'lucide-react';
 import { cn } from './lib/utils';
 import * as tf from '@tensorflow/tfjs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -312,7 +312,12 @@ function ArchitectureDiagram({
 export default function App() {
   const [lang, setLang] = useState<'en' | 'es'>('en');
   const t = translations[lang];
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => (localStorage.getItem('ae-theme') as 'dark' | 'light') || 'dark');
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('light', theme === 'light');
+    localStorage.setItem('ae-theme', theme);
+  }, [theme]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isTraining, setIsTraining] = useState(false);
@@ -596,6 +601,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex flex-col">
+      {/* ── Fixed top-left widget: theme + language ── */}
+      <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
+        <button
+          onClick={() => setTheme(th => th === 'dark' ? 'light' : 'dark')}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="flex items-center justify-center w-9 h-9 rounded-lg bg-zinc-900/90 backdrop-blur border border-zinc-800 text-zinc-400 hover:text-zinc-100 transition-colors"
+        >
+          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+        <div className="flex items-center bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-lg p-1">
+          <button onClick={() => setLang('en')} className={cn('px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors', lang === 'en' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-200')}>EN</button>
+          <button onClick={() => setLang('es')} className={cn('px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors', lang === 'es' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-200')}>ES</button>
+        </div>
+      </div>
       <header className="border-b border-zinc-800 p-6 bg-zinc-900/30">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -603,20 +622,6 @@ export default function App() {
             <p className="text-zinc-400 mt-2 max-w-3xl">
               {t.subtitle}
             </p>
-          </div>
-          <div className="flex items-center gap-2 bg-zinc-950 p-1 rounded-lg border border-zinc-800">
-            <button 
-              onClick={() => setLang('en')}
-              className={cn("px-3 py-1 text-sm font-medium rounded-md transition-colors", lang === 'en' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-zinc-200")}
-            >
-              EN
-            </button>
-            <button 
-              onClick={() => setLang('es')}
-              className={cn("px-3 py-1 text-sm font-medium rounded-md transition-colors", lang === 'es' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-zinc-200")}
-            >
-              ES
-            </button>
           </div>
         </div>
       </header>
