@@ -618,7 +618,7 @@ export default function App() {
       <header className="border-b border-zinc-800 p-6 bg-zinc-900/30">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-white">{t.title}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-100">{t.title}</h1>
             <p className="text-zinc-400 mt-2 max-w-3xl">
               {t.subtitle}
             </p>
@@ -792,18 +792,18 @@ export default function App() {
               
               <div className="flex items-center gap-2 px-4 border-l border-zinc-800 min-w-[120px]">
                 <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">{t.s3_current_epoch}</span>
-                <span className="text-lg font-mono text-white">{epoch.toString().padStart(3, '0')}</span>
+                <span className="text-lg font-mono text-zinc-100">{epoch.toString().padStart(3, '0')}</span>
               </div>
               
               {lossHistory.length > 0 && (
                 <div className="flex items-center gap-4 px-4 border-l border-zinc-800">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-medium text-emerald-500 uppercase tracking-wider">{t.s3_loss_train}</span>
-                    <span className="text-sm font-mono text-white">{lossHistory[lossHistory.length - 1].loss.toFixed(4)}</span>
+                    <span className="text-sm font-mono text-zinc-100">{lossHistory[lossHistory.length - 1].loss.toFixed(4)}</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] font-medium text-indigo-400 uppercase tracking-wider">{t.s3_loss_val}</span>
-                    <span className="text-sm font-mono text-white">{lossHistory[lossHistory.length - 1].val_loss.toFixed(4)}</span>
+                    <span className="text-sm font-mono text-zinc-100">{lossHistory[lossHistory.length - 1].val_loss.toFixed(4)}</span>
                   </div>
                 </div>
               )}
