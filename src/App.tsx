@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { MnistData } from './services/mnist';
 import { AutoencoderService, LayerConfig } from './services/model';
-import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler, Plus, Minus, ExternalLink, Sun, Moon } from 'lucide-react';
+import { Play, Loader2, RefreshCw, Database, Network, RotateCcw, Globe, Github, Blend, BookOpen, GitCompare, Calculator, Ruler, Plus, Minus, ExternalLink, Sun, Moon, Home } from 'lucide-react';
 import { cn } from './lib/utils';
 import * as tf from '@tensorflow/tfjs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -603,6 +603,11 @@ export default function App() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans flex flex-col">
       {/* ── Fixed top-left widget: theme + language ── */}
       <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
+        <a href="https://ml-ai-portal.vercel.app" title="Back to Learning Hub"
+          className="flex items-center justify-center w-9 h-9 rounded-lg bg-zinc-900/90 backdrop-blur border border-zinc-800 text-zinc-400 hover:text-zinc-100 transition-colors"
+        >
+          <Home className="w-4 h-4" />
+        </a>
         <button
           onClick={() => setTheme(th => th === 'dark' ? 'light' : 'dark')}
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}

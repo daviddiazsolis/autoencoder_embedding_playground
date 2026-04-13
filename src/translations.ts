@@ -98,7 +98,7 @@ export const translations = {
     notebooks_ae_desc: "Preprocess Fashion-MNIST, build and train the 784→8→784 autoencoder, visualize reconstructions, explore the latent space with PCA and t-SNE, run vector arithmetic and interpolation, and detect anomalies with a denoising autoencoder.",
     footer_created: "Created by",
     footer_role: "Ph.D.",
-    footer_ai: "This site was 'live coded' with the help of Google AI Studio.",
+    footer_ai: "This site was built with the help of generative AI.",
   },
   es: {
     title: "Playground de Embeddings",
@@ -199,6 +199,6 @@ export const translations = {
     notebooks_ae_desc: "Preprocesa Fashion-MNIST, construye y entrena el autoencoder 784→8→784, visualiza reconstrucciones, explora el espacio latente con PCA y t-SNE, realiza aritmética de vectores e interpolación, y detecta anomalías con un autoencoder denoising.",
     footer_created: "Creado por",
     footer_role: "Ph.D.",
-    footer_ai: "Este sitio fue 'codificado en vivo' con la ayuda de Google AI Studio.",
+    footer_ai: "Este sitio fue construido con la ayuda de IA generativa.",
   }
 };
