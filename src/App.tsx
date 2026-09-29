@@ -1285,11 +1285,14 @@ export default function App() {
               <p className="mt-1 text-sm text-zinc-400 leading-relaxed">{t.notebooks_ae_desc}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a href="https://colab.research.google.com/github/daviddiazsolis/association_rules_playground/blob/main/notebooks/04_autoencoders_embeddings.ipynb" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/40 transition-colors">
+              <a href={`https://colab.research.google.com/github/daviddiazsolis/association_rules_playground/blob/main/notebooks/04_autoencoders_embeddings${lang === 'en' ? '_EN' : ''}.ipynb`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 border border-violet-500/40 transition-colors">
                 <ExternalLink className="w-3.5 h-3.5" />
                 {t.notebooks_open_colab}
               </a>
-              <a href="https://github.com/daviddiazsolis/association_rules_playground/blob/main/notebooks/04_autoencoders_embeddings.ipynb" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors">
+              <a href={`https://colab.research.google.com/github/daviddiazsolis/association_rules_playground/blob/main/notebooks/04_autoencoders_embeddings${lang === 'en' ? '' : '_EN'}.ipynb`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors">
+                {lang === 'en' ? 'Spanish version' : 'Versión en inglés'}
+              </a>
+              <a href={`https://github.com/daviddiazsolis/association_rules_playground/blob/main/notebooks/04_autoencoders_embeddings${lang === 'en' ? '_EN' : ''}.ipynb`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 transition-colors">
                 <Github className="w-3.5 h-3.5" />
                 {t.notebooks_view_gh}
               </a>
